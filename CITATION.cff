@@ -1,0 +1,42 @@
+# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-License-Identifier: Apache-2.0
+#
+# Update CITATION.cff via web application (GUI):
+# https://citation-file-format.github.io/cff-initializer-javascript/#/update
+#
+cff-version: 1.2.0
+title: md-multiline-table
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file. Add your own description here.
+type: software
+authors:
+  - given-names: Florian
+    family-names: Heinrich
+    email: florian.heinrich@dlr.de
+    affiliation: German Aerospace Center (DLR)
+    orcid: 'https://orcid.org/0009-0007-0792-7908'
+  - name: German Aerospace Center (DLR)
+    address: Linder
+    city: Cologne
+    post-code: '51147'
+    region: NRW
+    alias: DLR
+    website: 'https://www.dlr.de/de'
+    tel: '+49 2203 6010'
+repository-code: 'https://github.com/DLR-KI/md-multiline-table'
+url: 'https://www.dlr.de/en/ki'
+# abstract: >-
+#   Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.
+#   At vero eos et accusam et justo duo dolores et ea rebum.
+#   Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.
+keywords:
+  - dlr
+  - markdown
+  - extension
+  - mkdocs
+  - documentation
+  - tables
+# commit: 7c84121c656b3e9d66b074dc2f91d9c6f14202e8 (commit ID from the release commit)
+# version: 0.0.1
+# date-released: '1997-01-01'

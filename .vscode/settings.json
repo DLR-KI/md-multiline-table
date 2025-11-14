@@ -1,0 +1,59 @@
+// SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+// SPDX-License-Identifier: CC0-1.0
+{
+    "cSpell.allowCompoundWords": true,
+    "cSpell.language": "en,scientific-terms-us",
+    "cSpell.words": [
+        "mkdocs",
+        "mypy",
+        "pyproject",
+        "venv"
+    ],
+    "files.associations": {
+        ".markdownlint.json": "jsonc",
+        "*.env": "ini",
+        "pyproject.toml": "ini"
+    },
+    "files.exclude": {
+        ".pytest_cache": true,
+        ".tox": true,
+        "*.egg-info": true,
+        "**/__pycache__": true,
+        "**/.mypy_cache": true,
+        "**/.ruff_cache": true
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/.mypy_cache/*/**": true,
+        "**/.ruff_cache/*/**": true,
+        "**/.venv/*/**": true
+    },
+    "shellcheck.customArgs": [
+        "--external-sources",
+        "--shell", "bash"
+    ],
+    "yaml.schemas": {
+        "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
+    },
+    "yaml.customTags": [
+        "!ENV scalar",
+        "!ENV sequence",
+        "!reference sequence",
+        "!relative scalar",
+        "tag:yaml.org,2002:python/name:material.extensions.emoji.to_svg",
+        "tag:yaml.org,2002:python/name:material.extensions.emoji.twemoji",
+        "tag:yaml.org,2002:python/name:pymdownx.superfences.fence_code_format",
+        "tag:yaml.org,2002:python/object/apply:pymdownx.slugs.slugify mapping"
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./tests",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "markdown.extension.toc.updateOnSave": false,
+}
