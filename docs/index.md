@@ -239,7 +239,7 @@ It is not important where the conext or empty cells are inside a multiline table
 
 <h3 id="colon-example-3">Example 3</h3>
 
-My current preferred method for making each "complete" line easily identifiable is to use blank lines so that the naked eye can immediately tell where a line begins and ends.
+A great method for making each "complete" line easily identifiable is to use blank lines so that the naked eye can immediately tell where a line begins and ends.
 
 ```markdown
 | Module ID | Class | Description                        |

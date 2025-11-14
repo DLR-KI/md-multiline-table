@@ -7,7 +7,7 @@ site_name: Multiline Table extension for Python Markdown
 
 repo_name: md-multiline-table
 repo_url: https://github.com/DLR-KI/md-multiline-table
-#edit_uri: edit/main/docs/
+edit_uri: edit/main/docs/
 
 theme:
   name: material
