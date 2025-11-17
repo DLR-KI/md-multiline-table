@@ -21,14 +21,6 @@ The main installation is as easy as any other pip package.
 
 //// tab | pip
 
-/// tab | ssh
-
-```bash
-pip install -U "git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main"
-```
-
-///
-
 /// tab | https
 
 ```bash
@@ -37,25 +29,33 @@ pip install -U "git+https://github.com/DLR-KI/md-multiline-table.git@main"
 
 ///
 
-////
-
-//// tab | pyproject.toml
-
 /// tab | ssh
 
-```toml
-dependencies = [
-  "dlr-logging @ git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main",
-]
+```bash
+pip install -U "git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main"
 ```
 
 ///
+
+////
+
+//// tab | pyproject.toml
 
 /// tab | https
 
 ```toml
 dependencies = [
-  "dlr-logging @ git+https://github.com/DLR-KI/md-multiline-table.git@main",
+  "md-multiline-table @ git+https://github.com/DLR-KI/md-multiline-table.git@main",
+]
+```
+
+///
+
+/// tab | ssh
+
+```toml
+dependencies = [
+  "md-multiline-table @ git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main",
 ]
 ```
 
@@ -65,21 +65,21 @@ dependencies = [
 
 //// tab | setup.py
 
-/// tab | ssh
+/// tab | https
 
 ```python
 install_requires = [
-    "dlr-logging @ git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main",
+    "md-multiline-table @ git+https://github.com/DLR-KI/md-multiline-table.git@main",
 ]
 ```
 
 ///
 
-/// tab | https
+/// tab | ssh
 
 ```python
 install_requires = [
-    "dlr-logging @ git+https://github.com/DLR-KI/md-multiline-table.git@main",
+    "md-multiline-table @ git+ssh://git@github.com/DLR-KI/md-multiline-table.git@main",
 ]
 ```
 
@@ -89,20 +89,20 @@ install_requires = [
 
 //// tab | poetry
 
-/// tab | ssh
-
-```toml
-[tool.poetry.dependencies]
-dlr-logging = { git = "git+ssh://git@github.com/DLR-KI/md-multiline-table.git", branch = "main" }
-```
-
-///
-
 /// tab | https
 
 ```toml
 [tool.poetry.dependencies]
-dlr-logging = { git = "git+https://github.com/DLR-KI/md-multiline-table.git", branch = "main" }
+md-multiline-table = { git = "git+https://github.com/DLR-KI/md-multiline-table.git", branch = "main" }
+```
+
+///
+
+/// tab | ssh
+
+```toml
+[tool.poetry.dependencies]
+md-multiline-table = { git = "git+ssh://git@github.com/DLR-KI/md-multiline-table.git", branch = "main" }
 ```
 
 ///
