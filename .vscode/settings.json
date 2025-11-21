@@ -10,7 +10,6 @@
         "venv"
     ],
     "files.associations": {
-        ".markdownlint.json": "jsonc",
         "*.env": "ini",
         "pyproject.toml": "ini"
     },

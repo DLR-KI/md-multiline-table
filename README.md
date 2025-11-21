@@ -132,7 +132,7 @@ Please follow the contribution rules:
 - verify shell script static code check compliance with [ShellCheck](https://www.shellcheck.net/wiki/)
 - verify [REUSE Specification 3.0](https://reuse.software/spec/) compliance for all files
 - verify project license compliance without any license conflicts (e.g. for 3rd party libraries, data, models, ...)
-- verify documentation (markdown) compliance w.r.t. [markdown linting rules](https://github.com/DavidAnson/markdownlint#rules--aliases) further specified inside the [.markdownlint.json](.markdownlint.json) configuration file
+- verify documentation (markdown) compliance w.r.t. [markdown linting rules](https://github.com/DavidAnson/markdownlint#rules--aliases) further specified inside the [.markdownlint-cli2.jsonc](.markdownlint-cli2.jsonc) configuration file
 - run all tests successfully
 
 ### Documentation
