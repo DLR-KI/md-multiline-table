@@ -139,7 +139,7 @@ jobs:
       - name: Create coverage HTML report
         run: python -m coverage html --directory "./build/htmlcov"
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: HTML coverage report
           path: build/htmlcov
