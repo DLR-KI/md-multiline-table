@@ -158,7 +158,7 @@ jobs:
       - name: Install dependencies
         run: pip install -U -e ".[all]"
       - name: Download coverage report artifact
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: HTML coverage report
           path: build/htmlcov
