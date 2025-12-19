@@ -118,7 +118,7 @@ extra:
     - icon: dlr-ki
       link: https://www.dlr.de/en/ki
     - icon: fontawesome/brands/square-github
-      link: https://github.com/DLR-KI/md-multiline-table
+      link: https://github.com/DLR-KI
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js

@@ -112,7 +112,7 @@ pre-commit run --all-files
 ```
 
 Running the GitLab CI locally is a bit more complicated.
-Is also requires Node.js as well as Docker installed and configured.
+It also requires Node.js as well as Docker installed and configured.
 
 ```bash
 npm exec gitlab-ci-local
