@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-License-Identifier: Apache-2.0
 #
 """Multiline Table extension for Python Markdown."""
@@ -48,12 +48,12 @@ class MultilineTableProcessor(TableProcessor):
         rows = [row.strip(" ") for row in block.split("\n")]
         if len(rows) > 1:
             header0 = rows[0]
-            self.border = PIPE_NONE  # type: ignore[assignment]
+            self.border = PIPE_NONE  # ty: ignore[invalid-assignment]
             if header0.startswith("|"):
-                self.border |= PIPE_LEFT  # type: ignore[assignment]
+                self.border |= PIPE_LEFT
             if self.RE_END_BORDER.search(header0) is not None:
-                self.border |= PIPE_RIGHT  # type: ignore[assignment]
-            row = self._split_row(header0)  # type: ignore[attr-defined]
+                self.border |= PIPE_RIGHT
+            row = self._split_row(header0)  # ty: ignore[unresolved-attribute]
             row0_len = len(row)
             is_table = row0_len > 1
 
@@ -68,7 +68,7 @@ class MultilineTableProcessor(TableProcessor):
 
             if is_table:
                 format_row = next((row for idx, row in enumerate(rows) if idx > 0 and row.endswith("|")))
-                row = self._split_row(format_row)  # type: ignore[attr-defined]
+                row = self._split_row(format_row)  # ty: ignore[unresolved-attribute]
                 is_table = (len(row) == row0_len) and set("".join(row)) <= set("|:- ")
                 if is_table:
                     self.separator = row
@@ -121,10 +121,8 @@ class MultilineTableProcessor(TableProcessor):
             lines[line_idx - 1] = (
                 "| "
                 + " | ".join(
-                    map(
-                        lambda column_parts: " ".join(map(lambda part: part.strip(), column_parts)).strip(),
-                        zip(columns_previous, columns, strict=False),
-                    )
+                    " ".join(part.strip() for part in column_parts).strip()
+                    for column_parts in zip(columns_previous, columns, strict=False)
                 )
                 + " |"
             )

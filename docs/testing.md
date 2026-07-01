@@ -3,7 +3,7 @@ title: Testing
 hide: navigation
 ---
 <!--
-SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 SPDX-License-Identifier: CC-BY-4.0
 -->
 
@@ -12,27 +12,21 @@ SPDX-License-Identifier: CC-BY-4.0
 
 This projects provides a few different tests and checks.
 
-In general, we have two files which define all the tests:
+In general, we have two files which defines all the tests:
 
-- [.pre-commit-config.yaml](https://github.com/DLR-KI/md-multiline-table/blob/main/.pre-commit-config.yaml)
-- [.github/workflows/main.yml](https://github.com/DLR-KI/md-multiline-table/blob/main/.github/workflows/main.yml)
-<!--
-- [.gitlab-ci.yml](https://github.com/DLR-KI/md-multiline-table/blob/main/.gitlab-ci.yml)
--->
+- [prek.toml](https://github.com/DLR-KI/md-multiline-table/blob/main/prek.toml)
+- CI pipeline like GitLab's [.gitlab-ci.yml](https://github.com/DLR-KI/md-multiline-table/blob/main/.gitlab-ci.yml) or GitHubs [workflows](https://github.com/DLR-KI/md-multiline-table/blob/main/.github/workflows/main.yml)
 
-To run the pre-commit hooks manually, use:
+To easily run these tests locally, use:
 
 ```bash
-pre-commit run --all-files
+./scripts/test.sh
 ```
 
-Running the GitLab CI locally is a bit more complicated.
-Is also requires Node.js as well as Docker installed and configured.
+If you only want to run the pre-commit hooks manually, use:
 
 ```bash
-npm exec gitlab-ci-local
-# or run a single job, e.g. pre-commit
-npm exec gitlab-ci-local -- pre-commit
+uv run prek run --all-files
 ```
 
 ## Python Code Tests
@@ -41,41 +35,64 @@ Feature tests as well as test coverage:
 
 ```bash
 # run tests
-python -m coverage run -m unittest discover --start-directory tests
+uv run coverage run -m pytest
 
-# create html coverage report
-python -m coverage html --directory "./build/htmlcov"
 # serve html coverage report
-python -m http.server -d build/htmlcov
+uv run python -m http.server -d build/htmlcov
 ```
 
 Static code checks using [ruff](https://docs.astral.sh/ruff):
 
 ```bash
 # linter
-python -m ruff check md_multiline_table
-python -m ruff check tests
+uv run ruff check src
+uv run ruff check tests
+uv run ruff check scripts
 # formatter
-python -m ruff format --diff md_multiline_table
-python -m ruff format --diff tests
+uv run ruff format --diff src
+uv run ruff format --diff tests
+uv run ruff format --diff scripts
 ```
 
 To run automatic static code fixes, use:
 
 ```bash
 # linter
-python -m ruff check --fix md_multiline_table
-python -m ruff check --fix tests
+uv run ruff check --fix src
+uv run ruff check --fix tests
+uv run ruff check --fix scripts
 # formatter
-python -m ruff format md_multiline_table
-python -m ruff format tests
+uv run ruff format src
+uv run ruff format tests
+uv run ruff format scripts
 ```
 
-Static type checks using [mypy](https://www.mypy-lang.org/):
+Static code analysis using [pylint](https://www.pylint.org/):
 
 ```bash
-python -m mypy md_multiline_table
-python -m mypy tests
+uv run pylint --fail-under=8 src
+uv run pylint --exit-zero tests
+uv run pylint --exit-zero scripts
+```
+
+Static type checks using [ty](https://docs.astral.sh/ty/reference/cli/#ty-check):
+
+```bash
+uv run ty src
+uv run ty tests
+uv run ty scripts
+```
+
+General typo checking using [typos](https://github.com/crate-ci/typos):
+
+```bash
+uv run typos
+```
+
+## Bash Script Checks
+
+```bash
+find scripts -type f -name "*.sh" -exec uv run shellcheck --external-sources --shell bash --source-path scripts {} +
 ```
 
 ## Markdown Checks
@@ -89,12 +106,68 @@ npm exec markdownlint-cli2 -- "./docs/**/*.md" "./README.md"
 ## License Checks
 
 ```bash
-python -m licensecheck
-python -m reuse lint
+uv run licensecheck
+uv run reuse lint
 ```
 
 ## Vulnerability Checks
 
 ```bash
-python -m tox --recreate -e vulnerability
+uv audit
 ```
+
+## DependaBot Checks
+
+[dependabot-cli](https://github.com/dependabot/cli) is a tool for testing and debugging Dependabot update jobs.
+
+### Preparations
+
+To run DependaBot checks locally, please ensure that Docker is installed and configured.
+
+Currently, dependabot-cli does not support using rootless Docker directly.
+Therefore, we need to build our own DependaBot Docker image and use Docker in Docker.
+
+For system-wide Docker, you can just Download the pre build binaries and from the official [release pages](https://github.com/dependabot/cli/releases).
+
+```Dockerfile
+FROM golang:1.26.1-alpine3.23 AS install-dependabot
+RUN go install github.com/dependabot/cli/cmd/dependabot@latest \
+    && cp $GOPATH/bin/dependabot /usr/local/bin/
+
+FROM docker:29-dind AS runtime
+COPY --from=install-dependabot /usr/local/bin/dependabot /usr/local/bin/
+ENTRYPOINT ["dependabot"]
+```
+
+```bash
+docker build -t dependabot-cli:latest .
+```
+
+### Run DependaBot Checks
+
+```bash
+docker run \
+  -it \
+  --rm \
+  --network=host \
+  -v $XDG_RUNTIME_DIR/docker.sock:/var/run/docker.sock \
+  -v $HOME/.docker/config.json:/root/.docker/config.json \
+  -v .:/repo \
+  dependabot-cli update pip test/test --local /repo
+```
+
+Note that in the last command line `pip` could be any supported DependaBot manager, depending on what you want to check.
+Some useful manager are:
+
+- `pip`
+- `uv`
+- `pre_commit`
+- `github_actions`
+- `submodules`
+- `docker`
+- `docker_compose`
+- `devcontainers`
+
+Also take a look at all supported DependaBot managers on [GitHub](https://github.com/dependabot/cli/blob/f27e7af52b72620539c5b371097ca576de5c7fa8/internal/infra/run.go#L270-L300).
+Note that this links is referencing to a fixed version.
+Check out the main branch too.

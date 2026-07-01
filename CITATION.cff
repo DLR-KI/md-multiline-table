@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-License-Identifier: Apache-2.0
 #
 # Update CITATION.cff via web application (GUI):
@@ -41,5 +41,5 @@ keywords:
   - mkdocs
   - documentation
   - tables
-version: 1.0.0
-date-released: '2025-12-19'
+version: 1.1.0
+date-released: '2026-07-01'

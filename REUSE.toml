@@ -1,0 +1,13 @@
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-License-Identifier: Apache-2.0
+
+version = 1
+SPDX-PackageName = "md-multiline-table"
+SPDX-PackageSupplier = ["2026 German Aerospace Center (DLR)"]
+SPDX-PackageDownloadLocation = "https://github.de/DLR-KI/md-multiline-table"
+
+[[annotations]]
+path = ["uv.lock"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 German Aerospace Center (DLR)"]
+SPDX-License-Identifier = "Apache-2.0"

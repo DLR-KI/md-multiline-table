@@ -1,11 +1,12 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
-# SPDX-License-Identifier: CC0-1.0
-#
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
+# SPDX-License-Identifier: Apache-2.0
+
 stages:
+  - pre
   - build
   - linter
   - test
-  - doc
+  - post-test
   - deploy
 
 variables:
@@ -14,36 +15,50 @@ variables:
   ARTIFACT_COMPRESSION_LEVEL: fast
   CACHE_COMPRESSION_LEVEL: fast
   DOCKER_DRIVER: overlay2
-  PIP_CACHE_DIR: $CI_PROJECT_DIR/.cache/pip
-  PYTHON_VERSION: '3.10'
+  # Caching
+  UV_CACHE_DIR: $CI_PROJECT_DIR/.cache/uv
+  PREK_HOME: $CI_PROJECT_DIR/.cache/prek
+  # Python
+  PYTHON_VERSION: '3.11'
+  UV_LINK_MODE: copy
+  # GitLab DependaBot
+  DIRECTORY: /
+  PACKAGE_MANAGER_SET: pip,uv,pre-commit
+  # PyTorch CPU
+  PIP_EXTRA_INDEX_URL: https://download.pytorch.org/whl/cpu
+  UV_EXTRA_INDEX_URL: pytorch=https://download.pytorch.org/whl/cpu
 
-cache:
-  key: ${CI_COMMIT_REF_NAME}
+.uv-cache: &uv-cache
+  key: uv
   paths:
-    - $PIP_CACHE_DIR/
+    - .cache/uv/
+  policy: pull
+
+default:
+  interruptible: true
+  # cache:
+  #   <<: *uv-cache
 
 workflow:
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
       when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
     - when: always
 
+.default_before_script: &default_before_script
+  - apt-get update
+  - apt-get install -y --no-install-recommends git
+  - uv sync --all-groups
+
 .python_settings_template: &python_settings
-  image: python:${PYTHON_VERSION}-slim
-  needs: [build]  # wait for build to reuse pip cache
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-trixie-slim
+  needs: [build]  # wait for build to reuse uv cache
   before_script:
-    - apt-get update
-    - apt-get install -y git
-    - pip install virtualenv        #
-    - virtualenv .venv              # optional
-    - source .venv/bin/activate     #
-    - python -m pip install -U pip  #
-    - pip install -U --extra-index-url https://download.pytorch.org/whl/cpu -e ".[all]"
+    - *default_before_script
   cache:
-    key: python-${PYTHON_VERSION}
-    paths:
-      - $PIP_CACHE_DIR/${PYTHON_VERSION}
-    policy: pull
+    <<: *uv-cache
 
 
 # ##  INCLUDE THE DEFAULT GITLAB CI JOBS  #####################################
@@ -51,7 +66,45 @@ workflow:
 # https://gitlab.com/gitlab-org/gitlab/-/tree/master/lib/gitlab/ci/templates
 include:
   - template: Code-Quality.gitlab-ci.yml
-  - remote: https://gitlab.com/yesolutions/gitlab-ci-templates/raw/main/templates/pre-commit-autofix.yaml
+
+
+# ##  PRE BUILD  ##############################################################
+
+pre-commit:
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-trixie-slim
+  stage: pre
+  needs: []
+  cache:
+    key: prek
+    paths:
+      - .cache/prek/
+  rules:
+    - exists:
+        - .pre-commit-config.yaml
+        - prek.toml
+  before_script:
+    - apt-get update
+    - apt-get install -y --no-install-recommends ca-certificates git libatomic1 curl
+    - git config --global --add safe.directory "*"
+    - uv tool install prek
+    # install Docker
+    - install -m 0755 -d /etc/apt/keyrings
+    - curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+    - chmod a+r /etc/apt/keyrings/docker.asc
+    - |
+      tee /etc/apt/sources.list.d/docker.sources <<EOF
+      Types: deb
+      URIs: https://download.docker.com/linux/debian
+      Suites: $(grep "VERSION_CODENAME=" /etc/os-release | cut -d'=' -f2)
+      Components: stable
+      Architectures: $(dpkg --print-architecture)
+      Signed-By: /etc/apt/keyrings/docker.asc
+      EOF
+    - apt-get update
+    - apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    - rm -rf /var/lib/apt/lists/*
+  script:
+    - uv tool run prek run --all-files
 
 
 # ##  BUILD PROJECT AND CACHE  ################################################
@@ -61,13 +114,13 @@ build:
   stage: build
   needs: []
   script:
-    - python --version
-    - which python
-    - pip show md_multiline_table
+    # - uv --version
+    # - uv run python --version
+    # - uv run pip --version
+    # - uv run pip show md-multiline-table
+    - echo "Done!"
   cache:
-    key: python-${PYTHON_VERSION}
-    paths:
-      - $PIP_CACHE_DIR/${PYTHON_VERSION}
+    <<: *uv-cache
     policy: pull-push
 
 
@@ -76,53 +129,85 @@ build:
 code_quality:
   stage: linter
 
-pre-commit:
-  image: ghcr.io/juhannc/pre-commit:3.10-slim
+ruff-formatter:
+  image: ghcr.io/astral-sh/ruff:alpine
   stage: linter
   needs: []
-  variables:
-    PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
-  before_script:
-    - pip install --upgrade pip pre-commit
   script:
-    - pre-commit run --all-files
-  cache:
-    key: pre-commit
-    paths:
-      - .cache/pre-commit
-
-ruff-formatter:
-  <<: *python_settings
-  stage: linter
-  script:
-    - python -m ruff format --diff md_multiline_table tests
+    - ruff format --diff src tests scripts
 
 ruff-linter:
-  <<: *python_settings
+  image: ghcr.io/astral-sh/ruff:alpine
   stage: linter
+  needs: []
   script:
-    - python -m ruff check --output-format=gitlab md_multiline_table tests > code-quality-report.json
+    - ruff check --output-format=gitlab src tests scripts > code-quality-report.json
   artifacts:
     when: always
     reports:
-      codequality: $CI_PROJECT_DIR/code-quality-report.json
+      codequality: code-quality-report.json
 
-mypy:
+pylint:
   <<: *python_settings
   stage: linter
   script:
-    # generate report
-    - pip install -U mypy-gitlab-code-quality
-    - python -m mypy --output=json md_multiline_table > mypy-out.json || true
-    - mypy-gitlab-code-quality < mypy-out.json > codequality.json
-    # log to console and return correct error code
-    - python -m mypy md_multiline_table
+    - mkdir -p public/badges/ public/lint/
+    - echo undefined > public/badges/pylint.score
+    # check "src" only and extract score for repository
+    - uv run pylint --exit-zero --output-format=text src | tee public/lint/pylint.log
+    - sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p' public/lint/pylint.log > public/badges/pylint.score
+    # check "src", "tests" and "scripts" and generate codequality reports and anybadge
+    - uv run pylint --exit-zero --output-format=text src tests scripts | tee public/lint/pylint.log
+    - uv run pylint --exit-zero --output-format=pylint_gitlab.GitlabCodeClimateReporter src tests scripts > codeclimate.json
+    - uv run pylint --exit-zero --output-format=pylint_gitlab.GitlabPagesHtmlReporter src tests scripts > public/lint/index.html
+    - uv run anybadge --overwrite --label "pylint" --value="$(cat public/badges/pylint.score)" --file=public/badges/pylint.svg 4=red 6=orange 8=yellow 10=green
+    # print "src" pylint score and fail if score is below 8
+    - |
+      echo "Your score is: $(cat public/badges/pylint.score)"
+      awk -v threshold=8.0 '{exit ($0 < threshold) ? 1 : 0}' public/badges/pylint.score
+  artifacts:
+    when: always
+    reports:
+      codequality: codeclimate.json
+    paths:
+      - public
+
+ty:
+  <<: *python_settings
+  stage: linter
+  script:
+    - uv run ty --version
+    - uv run ty check src/ --output-format=gitlab > codequality.json
   artifacts:
     when: always
     reports:
       codequality: codequality.json
 
-doc:
+typos:
+  image: ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-trixie-slim
+  stage: linter
+  needs: []
+  script:
+    - uv tool run typos --format json > typos-report.json || true
+    - uv tool run typos-gitlab-code-quality < typos-report.json > codequality.json
+  artifacts:
+    when: always
+    reports:
+      codequality: codequality.json
+
+shellcheck:
+  image: koalaman/shellcheck-alpine:stable
+  stage: linter
+  needs: []
+  rules:
+    - exists:
+        - scripts/**/*.sh
+  before_script:
+    - apk add bash
+  script:
+    - find scripts -type f -name "*.sh" -exec shellcheck --external-sources --shell bash --source-path scripts {} +
+
+mdlint:
   image:
     name: davidanson/markdownlint-cli2
     entrypoint: [/bin/sh, -c]
@@ -138,62 +223,76 @@ doc:
     reports:
       codequality: markdownlint-cli2-codequality.json
 
-license:
+licensecheck:
   <<: *python_settings
   stage: linter
-  script:
-    - python -m licensecheck
-    - python -m reuse lint
-
-vulnerability:
-  image: python:${PYTHON_VERSION}-slim
-  stage: linter
-  needs: [build]  # wait for build to reuse pip cache
-  rules:
-    - if: $CI_PIPELINE_SOURCE != "schedule"
-      when: always
   before_script:
     - apt-get update
     - apt-get install -y git
-    - pip install -U "tox~=4.26.0"
+    - uv sync  # without dev, test, docs, etc. groups
+    - uv pip install licensecheck
   script:
-    - python -m tox --recreate -e vulnerability
-  cache:
-    key: python-${PYTHON_VERSION}
-    paths:
-      - $PIP_CACHE_DIR/${PYTHON_VERSION}
-    policy: pull
+    - uv run licensecheck
+
+reuse:
+  image:
+    name: fsfe/reuse
+    entrypoint: [/bin/sh, -c]
+  stage: linter
+  needs: []
+  script:
+    - reuse lint
+
+vulnerabilities:
+  <<: *python_settings
+  stage: linter
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "schedule"
+      when: always
+  script:
+    - uv audit
 
 
 # ##  TESTS  ##################################################################
 
 py-tests:
   <<: *python_settings
+  image: ghcr.io/astral-sh/uv:debian-slim
   stage: test
+  parallel:
+    matrix:
+      - PYTHON_VERSION: ['3.11', '3.12', '3.13', '3.14', '3.15']
+  before_script:
+    - uv python install "${PYTHON_VERSION}"
+    - uv python pin "${PYTHON_VERSION}"
+    - *default_before_script
   script:
-    - python -m coverage run -m unittest discover --start-directory tests
-    - python -m coverage xml
-    - python -m coverage html --directory "./build/htmlcov"
+    - uv run pytest
+  coverage: /^TOTAL.+?(\d+\%)$/
   artifacts:
     when: always
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: coverage.xml
+        path: build/coverage.xml
+      junit: build/report.xml
     paths:
       - build/htmlcov
+      - build/coverage.xml
+      - build/report.xml
+      - .coverage
 
 
-# ##  DOCUMENTATION  ##########################################################
+# ##  POST TEST  ##############################################################
 
 documentation:
   <<: *python_settings
-  stage: doc
+  stage: post-test
   needs: [py-tests]
   variables:
     DEPLOY: true
   script:
-    - python -m mkdocs build
+    - uv run mkdocs build
   artifacts:
     paths:
       - site
@@ -204,11 +303,13 @@ documentation:
 pages:
   image: alpine
   stage: deploy
+  interruptible: false
   rules:
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   before_script:
     - apk add tree
   script:
+    - rm -rf public
     - mv site public
     - tree public
   artifacts:

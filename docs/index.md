@@ -3,7 +3,7 @@ title: Home
 hide: navigation
 ---
 <!--
-SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 SPDX-License-Identifier: CC-BY-4.0
 -->
 
@@ -179,7 +179,7 @@ Easiest way to use multiline tables.
 
 <h3 id="plus-example-2">Example 2</h3>
 
-It is not important where the conext or empty cells are inside a multiline table.
+It is not important where the context or empty cells are inside a multiline table.
 
 ```markdown
 | Module |       |                                    |
@@ -225,7 +225,7 @@ Easiest way to use multiline tables.
 
 <h3 id="colon-example-2">Example 2</h3>
 
-It is not important where the conext or empty cells are inside a multiline table.
+It is not important where the context or empty cells are inside a multiline table.
 
 ```markdown
 | Module |       |                                    |

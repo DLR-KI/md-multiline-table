@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 SPDX-License-Identifier: CC0-1.0
 -->
 
