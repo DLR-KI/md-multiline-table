@@ -18,7 +18,7 @@ def convert_and_compare(md_file: str, *extensions: str | MultilineTableExtension
     with open(md_file) as file:
         md = file.read()
     with open(solution_file) as file:
-        solution = file.read()
+        solution = file.read().strip()
 
     html = markdown(md, extensions=extensions)
     assert solution == html

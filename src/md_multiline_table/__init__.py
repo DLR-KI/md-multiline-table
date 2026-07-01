@@ -113,8 +113,9 @@ class MultilineTableProcessor(TableProcessor):
             columns = re.split(re_split_pattern, line)[1:-1]
             if len(columns) != column_count:
                 self._logger.warning(
-                    "Table column count mismatch. "
-                    f"Row has {len(columns)} instead of the expected {column_count} columns."
+                    "Table column count mismatch. Row has %d instead of the expected %d columns.",
+                    len(columns),
+                    column_count,
                 )
 
             columns_previous = re.split(r"(?<!\\)(?:\\\\)*\|", lines[line_idx - 1])[1:-1]
@@ -149,11 +150,15 @@ class MultilineTableExtension(TableExtension):
         md.parser.blockprocessors.register(processor, "md-multiline-table", 106)
 
 
-def make_extension(*args, **kwargs) -> MultilineTableExtension:
+def make_extension(*_args, **kwargs) -> MultilineTableExtension:
     """
     Make a new instance of `MultilineTableExtension`.
+
+    Arguments:
+        _args: Will be ignored.
+        kwargs: Further Extension arguments.
 
     Returns:
         MultilineTableExtension: new instance of MultilineTableExtension
     """
-    return MultilineTableExtension(*args, **kwargs)
+    return MultilineTableExtension(**kwargs)
