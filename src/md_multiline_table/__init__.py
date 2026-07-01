@@ -5,7 +5,7 @@
 
 from logging import getLogger
 import re
-from typing import Any
+from typing import Any, no_type_check
 import xml.etree.ElementTree as etree
 
 from markdown import Markdown
@@ -29,6 +29,7 @@ class MultilineTableProcessor(TableProcessor):
         super().__init__(parser, config)
         self._logger = getLogger("MARKDOWN")
 
+    @no_type_check
     def test(self, parent: etree.Element, block: str) -> bool:
         """
         Ensure that the first few rows contains a valid table head (column header and separator row).
@@ -48,12 +49,12 @@ class MultilineTableProcessor(TableProcessor):
         rows = [row.strip(" ") for row in block.split("\n")]
         if len(rows) > 1:
             header0 = rows[0]
-            self.border = PIPE_NONE  # ty: ignore[invalid-assignment]
+            self.border = PIPE_NONE
             if header0.startswith("|"):
                 self.border |= PIPE_LEFT
             if self.RE_END_BORDER.search(header0) is not None:
                 self.border |= PIPE_RIGHT
-            row = self._split_row(header0)  # ty: ignore[unresolved-attribute]
+            row = self._split_row(header0)
             row0_len = len(row)
             is_table = row0_len > 1
 
@@ -68,7 +69,7 @@ class MultilineTableProcessor(TableProcessor):
 
             if is_table:
                 format_row = next((row for idx, row in enumerate(rows) if idx > 0 and row.endswith("|")))
-                row = self._split_row(format_row)  # ty: ignore[unresolved-attribute]
+                row = self._split_row(format_row)
                 is_table = (len(row) == row0_len) and set("".join(row)) <= set("|:- ")
                 if is_table:
                     self.separator = row
