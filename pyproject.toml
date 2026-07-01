@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-License-Identifier: Apache-2.0
 #
 [project]
@@ -20,7 +20,7 @@ name = "md-multiline-table"  # Required
 #
 # For a discussion on single-sourcing the version, see
 # https://packaging.python.org/guides/single-sourcing-package-version/
-version = "1.0.0"  # Required
+version = "1.1.0"  # Required
 
 # This is a one-line description or tagline of what your project does. This
 # corresponds to the "Summary" metadata field:
@@ -41,12 +41,16 @@ readme = "README.md" # Optional
 # 'Programming Language' classifiers above, 'pip install' will check this
 # and refuse to install the project if the version does not match. See
 # https://packaging.python.org/guides/distributing-packages-using-setuptools/#python-requires
-requires-python = ">=3.7"
+requires-python = ">=3.11"
 
-# This is either text indicating the license for the distribution, or a file
-# that contains the license
-# https://packaging.python.org/en/latest/specifications/core-metadata/#license
-license = {file = "LICENSES/Apache-2.0.txt"}
+# SPDX license expression indicating the license for the distribution.
+# Value is mapped to the License-Expression field in the core metadata.
+# https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression
+license = "Apache-2.0"
+
+# License file paths relative to the project root directory.
+# https://packaging.python.org/en/latest/specifications/core-metadata/#license-expression
+license-files = ["LICENSE.md", "LICENSES/*"]
 
 # This field adds keywords for your project which will appear on the
 # project page. What does your project relate to?
@@ -85,19 +89,15 @@ classifiers = [  # Optional
   "Topic :: Text Processing :: Markup :: Markdown",
   "Operating System :: OS Independent",
 
-  # Pick your license as you wish
-  "License :: OSI Approved :: Apache Software License",
-
   # Specify the Python versions you support here. In particular, ensure
   # that you indicate you support Python 3. These classifiers are *not*
   # checked by "pip install". See instead "python_requires" below.
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: 3 :: Only",
 ]
 
@@ -108,41 +108,72 @@ classifiers = [  # Optional
 # For an analysis of this field vs pip's requirements files see:
 # https://packaging.python.org/discussions/install-requires-vs-requirements/
 dependencies = [ # Optional
-  "markdown==3.10",
+  "markdown>=3.10",
 ]
 
-# List additional groups of dependencies here (e.g. development
-# dependencies). Users will be able to install these using the "extras"
-# syntax, for example:
+# This specification defines dependency groups, a mechanism for storing
+# package requirements in pyproject.toml files such that they are not
+# included in project metadata when it is built.
 #
-#   $ pip install -U -e ".[all]"
+# Dependency groups are suitable for internal development use-cases like
+# linting and testing, as well as for projects which are not built for
+# distribution, like collections of related scripts.
 #
-# Similar to `dependencies` above, these must be valid existing
-# projects.
-[project.optional-dependencies] # Optional
+#   $ pip install -U -e --group all
+#   $ uv sync --group all
+#   $ uv sync --all-groups
+#
+[dependency-groups]  # Optional
 dev = [
-  "pre-commit>=3.5.0",
-  "reuse>=4.0.0",
+  "prek>=0.3.5",
+  "shellcheck-py",
+  "reuse>=6.2.0",
+  "ruff>=0.15.5",
+  "ty>=0.0.21",
+  "uv>=0.10.9",
 ]
 test = [
-  "black",
   "coverage",
   "licensecheck",
-  "mypy",
-  "ruff",
-  "shellcheck-py",
-  "tox",
+  "pytest",
+  "pytest-cov",
+]
+ci = [
+  "anybadge",
+  "codeclimate-test-reporter",
+  "flake8-docstrings-complete",
+  "flake8-docstrings",
+  "flake8-gl-codeclimate",
+  "flake8-pyproject",
+  "flake8",
+  "pylint-gitlab",
+  "pylint-per-file-ignores",
+  "pylint",
+  "typos",
+  "typos-gitlab-code-quality"
 ]
 stubs = [
-  "types-Markdown~=3.10.0",
+  "types-Markdown>=3.10",
 ]
 doc = [
+  "mkdocs",
+  "mkdocs-awesome-pages-plugin",
+  "mkdocs-git-revision-date-localized-plugin",
   "mkdocs-material",
-  "mkdocs-api-autonav",  # includes mkdocstrings-python
-  "mkdocs-minify-plugin",
+  "mkdocs-minify-plugin~=0.8.0",
+  "mkdocs-api-autonav~=0.3.0",
+  "mkdocstrings",
+  "mkdocstrings-python",
+  "pymdown-extensions",
   "mkdocs-coverage>=2.0.0",
 ]
-all = ["md-multiline-table[dev,test,stubs,doc]"]
+all = [
+  {include-group = "dev"},
+  {include-group = "test"},
+  {include-group = "ci"},
+  {include-group = "stubs"},
+  {include-group = "doc"},
+]
 
 # List URLs that are relevant to your project
 #
@@ -176,7 +207,6 @@ all = ["md-multiline-table[dev,test,stubs,doc]"]
 # If there are data files included in your packages that need to be
 # installed, specify them here.
 include-package-data = true
-license-files = ["LICENSE.md", "LICENSES/*.txt"]
 
 [tool.setuptools.packages.find]
 include = ["md_multiline_table*"]
@@ -186,10 +216,14 @@ namespaces = false
 md_multiline_table = ["py.typed"]
 
 [build-system]
-# These are the assumed default build requirements from pip:
-# https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
-requires = ["setuptools>=43.0.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.10.0,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.ty.src]
+include = ["src", "tests", "scripts"]
+
+[tool.uv]
+exclude-newer = "7 days"
 
 #######################################################################################################################
 
@@ -206,43 +240,64 @@ zero = true
 # https://docs.astral.sh/ruff/settings/
 
 [tool.ruff]
-line-length = 120
 extend-exclude = [
   ".build",
   "*.egg-info",
   "__pycache__",
   "Interactive-1.interactive",
 ]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.format]
+preview = true
 
 [tool.ruff.lint]
-extend-select = ["B", "D", "E", "I", "UP", "Q"]
-extend-ignore = ["ANN003", "D100", "D212", "D418", "S101"]
+extend-ignore = ["ANN003", "D100", "D212", "D418", "S101", "E203", "D105"]
+extend-select = ["B", "D", "E", "I", "UP", "Q", "TID252"]
+fixable = ["ALL"]
+preview = true
 # or be more strict:
-# select = ["ALL"]
 # extend-ignore = [
 #   "PLR", "T", "TRY",
 #   "ANN003", "D212", "D418", "S101",
 # ]
+# select = ["ALL"]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.ruff.lint.isort]
 # https://docs.astral.sh/ruff/settings/#lintisort
 force-sort-within-sections = true
 lines-after-imports = 2
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**/test_*.py" = [
+  "S101",
+  "ANN201",
+  "ANN205",
+  "D",
+  "E501",
+  "PLR0904",
+  "PLC2701",
+  "PLC0415",
+  "PLR2004",
+  "SLF001",
+  "S307"
+]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/test_*.py" = ["D"]
+# max-doc-length = 80
 
 #######################################################################################################################
 
 # coverage
 # https://coverage.readthedocs.io/en/latest/config.html
 
-[tool.coverage.run]
-branch = true
-source = ["md_multiline_table"]
+[tool.coverage.html]
+title = "Coverage report for md-multiline-table"
 
 [tool.coverage.report]
 # regexes for lines to exclude from consideration
@@ -263,9 +318,65 @@ exclude_lines = [
   # don't complain about abstract methods, they aren't run
   "@(abc\\.)?abstractmethod",
 ]
-
 ignore_errors = true
 skip_empty = true
 
-[tool.coverage.html]
-title = "Coverage report for md-multiline-table"
+[tool.coverage.run]
+branch = true
+source = ["src"]
+
+#######################################################################################################################
+
+# pytest
+# https://docs.pytest.org/en/latest
+
+[tool.pytest.ini_options]
+addopts = "--cov=src/ --cov-report=term-missing --cov-report=xml:build/coverage.xml --cov-report=html:build/htmlcov --junitxml=build/report.xml"
+python_files = "test_*.py"
+testpaths = ["tests"]
+
+##########################################################################################################################
+
+# flake8
+# https://flake8.pycqa.org/en/latest/user/configuration.html
+
+[tool.flake8]
+check-return-types = true
+extend-ignore = ["DCO010", "DCO060"]
+max-complexity = "10"
+max-line-length = "120"
+per-file-ignores = []
+select = "DCO, DOC"
+style = "google"
+
+############################################################################################################################
+
+# pylint
+# https://pylint.pycqa.org/en/latest/user_guide/run.html#command
+
+[tool.pylint.main]
+extension-pkg-allow-list = []
+load-plugins = ["pylint_per_file_ignores"]
+recursive = true
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "C0114"
+# C0114: missing-module-docstring
+max-line-length = "120"
+
+[tool.pylint.'MESSAGES CONTROL'.per-file-ignores]
+"docs/conf.py" = "C0103,W0622"  # for copyright notice
+# C0103: invalid-name (to ignore constant name not UPPER_CASE)
+# W0622: redefined-builtin
+"tests/**/*" = "C0114,C0116,R0903,R0904,W0212"
+# C0114: missing-module-docstring
+# C0116: missing-function-docstring
+# R0903: too-few-public-methods
+# R0904: too-many-public-methods
+# W0212: protected-access
+
+[tool.pylint.SIMILARITIES]
+ignore-comments = "yes"
+ignore-docstrings = "yes"
+ignore-imports = "yes"
+min-similarity-lines = 10

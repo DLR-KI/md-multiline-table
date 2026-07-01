@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-License-Identifier: CC0-1.0
 #
 # yaml-language-server: $schema=https://squidfunk.github.io/mkdocs-material/schema.json
@@ -71,7 +71,7 @@ plugins:
   # - autorefs
   - api-autonav:
       # https://github.com/tlambert03/mkdocs-api-autonav?tab=readme-ov-file#configuration
-      modules: [md_multiline_table]
+      modules: [src/md_multiline_table]
       exclude_private: true
   - mkdocstrings:
       enabled: !ENV [MKDOCSTRINGS_ENABLED, true]
@@ -130,7 +130,7 @@ extra_css:
   - styles/styles.css
 
 copyright: |
-  &copy; 2025
+  &copy; 2026
   <a href="https://www.dlr.de/en/ki/about-us/departments/algorithms-hybrid-solutions" target="_blank" rel="noopener">
     DLR KI ALG
   </a>

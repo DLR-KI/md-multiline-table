@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 SPDX-License-Identifier: CC-BY-4.0
 -->
 
@@ -23,18 +23,14 @@ The repository is organized as follows:
 
 ## Requirements
 
-- Python 3.7 or later as well as pip
+- Python 3.11 or later
+- uv (highly recommended)
 
     ```bash
-    which python
-    python --version
-    which pip
-    ```
-
-- virtualenv or venv (highly recommended)
-
-    ```bash
-    pip install -U virtualenv
+    # Linux and macOS
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    # Windows PowerShell
+    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     ```
 
 ## Install
@@ -48,25 +44,21 @@ There are multiple optional dependencies available:
 - `all`: installs all optional dependencies
 
 Of course, it is possible to install the software without any additional optional dependencies.
-Choose your poision based on your own requirements.
+Choose your poison based on your own requirements.
 
 ```bash
-# create virtual environment
-virtualenv -p $(which python3.10) .venv
-# or
-# python -m venv .venv
+# update uv (optional)
+uv self update
 
-# activate our virtual environment
-source .venv/bin/activate
+# create and install or update virtual environment with its dependencies
+uv sync --all-groups
 
-# update pip (optional)
-python -m pip install -U pip
-
-# install
-pip install -U -e ".[all]"
+# activate the virtual environment (optional)
+source .venv/bin/activate   # Linux and macOS
+.venv\Scripts\activate.ps1  # Windows
 
 # enable git pre-commit hooks (optional)
-pre-commit install
+uv run prek install
 ```
 
 ## Usage
@@ -99,25 +91,19 @@ This projects provides a few different tests and checks.
 
 In general, we have two files which defines all the tests:
 
-- [.pre-commit-config.yaml](.pre-commit-config.yaml)
 - [.github/workflows/main.yml](.github/workflows/main.yml)
-<!--
-- [.gitlab-ci.yml](.gitlab-ci.yml)
--->
+- [prek.toml](prek.toml)
 
-To run the pre-commit hooks manually, use:
+To easily run these tests locally, use:
 
 ```bash
-pre-commit run --all-files
+./scripts/test.sh
 ```
 
-Running the GitLab CI locally is a bit more complicated.
-It also requires Node.js as well as Docker installed and configured.
+If you only want to run the pre-commit hooks manually, use:
 
 ```bash
-npm exec gitlab-ci-local
-# or run a single job, e.g. pre-commit
-npm exec gitlab-ci-local -- pre-commit
+uv run prek run --all-files 
 ```
 
 ## Contribution
@@ -146,7 +132,7 @@ See the [docs](docs) folder for more details.
 To locally serve the documentation, feel free to use:
 
 ```bash
-python -m mkdocs serve
+uv run mkdocs serve
 ```
 
 ### Contributors

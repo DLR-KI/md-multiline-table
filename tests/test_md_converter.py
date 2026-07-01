@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
+# SPDX-FileCopyrightText: 2026 German Aerospace Center (DLR)
 # SPDX-License-Identifier: Apache-2.0
 #
 import os
@@ -8,17 +8,17 @@ import unittest
 
 from markdown import markdown
 
-from md_multiline_table import make_extension
+from md_multiline_table import MultilineTableExtension, make_extension
 
 
-def convert_and_compare(md_file: str, *extensions: str) -> None:
+def convert_and_compare(md_file: str, *extensions: str | MultilineTableExtension) -> None:
     solution_file = os.path.join(os.path.dirname(__file__), "resources", "solution.html")
     md_file = os.path.join(os.path.dirname(__file__), "resources", md_file)
 
     with open(md_file) as file:
         md = file.read()
     with open(solution_file) as file:
-        solution = file.read()
+        solution = file.read().strip()
 
     html = markdown(md, extensions=extensions)
     assert solution == html
