@@ -122,8 +122,10 @@ jobs:
         with:
           enable-cache: true
           python-version: "${{ env.PYTHON_VERSION }}"
+      - name: Install dependencies
+        run: uv sync --all-groups
       - name: Run pylint
-        run: uv tool run pylint --fail-under=8 src
+        run: uv run pylint --fail-under=8 src
 
   typos:
     name: Typo check (typos)
