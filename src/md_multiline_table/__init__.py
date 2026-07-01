@@ -76,31 +76,28 @@ class MultilineTableProcessor(TableProcessor):
 
         return is_table
 
-    def run(self, parent: etree.Element, blocks: list[str]) -> bool | None:
+    def run(self, parent: etree.Element, blocks: list[str]) -> None:
         """
         Transform multiline table to standard markdown table.
 
         Args:
             parent (etree.Element): parent html element
             blocks (list[str]): markdown code blocks
-
-        Returns:
-            bool | None: success state
         """
         lines = blocks.pop(0).split("\n")
 
         # sanity check which should never fail due to self.test(...)
         if len(lines) < 2:
             self._logger.warning("Broken table with less then 2 lines detected.")
-            return False
+            return
         column_count = len(re.split(r"(?<!\\)(?:\\\\)*\|", lines[0])) - 2
         if column_count < 1:
             self._logger.warning("Broken table with less then 1 column detected.")
-            return False
+            return
 
         # convert multiline table to default markdown table format
         blocks.insert(0, self._convert_table(lines, column_count))
-        return super().run(parent, blocks)
+        super().run(parent, blocks)
 
     def _convert_table(self, lines: list[str], column_count: int) -> str:
         line_idx = 1
